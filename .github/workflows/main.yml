@@ -6,8 +6,8 @@ on:
       - develop
 
 env:
-  AWS_REGION: ${{ secrets.AWS_REGION }}
-  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+  AWS_REGION: ${{ secrets.AWS_REGION }} #sa-east-1
+  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }} #prova-pratica
 
 jobs:
   deploy:
@@ -23,7 +23,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ secrets.AWS_REGION }} #sa-east-1
 
       - name: Login no Amazon ECR
         id: login-ecr
@@ -49,7 +49,7 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-definition.json
-          container-name: my-dotnet-app  # deve ser igual ao container name no ECS
+          container-name: prova-pratica
           image: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest
 
       - name: Publica definição do ECS
