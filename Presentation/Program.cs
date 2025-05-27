@@ -1,7 +1,11 @@
+using Application.UseCases;
+using Domain.Images;
+using Mediator;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Presentation;
 using Scalar.AspNetCore;
 using System.Text;
 
@@ -49,6 +53,8 @@ builder.Services
         };
     });
 
+Application.DependencyInjection.AddDependencies(builder.Services);
+
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer();
@@ -65,25 +71,43 @@ if (!app.Environment.IsProduction())
 
 app.UseHttpsRedirection();
 
-app.MapPost("produtos", (
-    [FromBody] CreateProdutoRequest request,
+var api = app.MapGroup("api");
+
+api.MapPost("produtos", async (
+    [FromForm] CreateProductEndpointRequest endpointRequest,
+    [FromServices] ISender sender,
     CancellationToken cancellationToken
 ) =>
 {
-    return new CreateProdutoRequestResponse(2);
+    var request = new CreateProductRequest(
+        endpointRequest.Name, 
+        endpointRequest.CategoryId,
+        endpointRequest.Price,
+        endpointRequest.Images.Select(image => 
+            new Image 
+            { 
+                Extension = image.ContentType.Split("/")[1],
+                Name = image.FileName,
+                Stream = image.OpenReadStream()
+            }
+        )
+    );
+
+    var result = await sender.Send(request, cancellationToken);
+
+    return result.Serialize();
 })
+    .Accepts<CreateProductEndpointRequest>("multipart/form-data")
+    .Produces<CreateProductRequest.Response>(StatusCodes.Status200OK)
     .ProducesProblem(StatusCodes.Status400BadRequest)
-    .Produces(StatusCodes.Status401Unauthorized)
     .ProducesProblem(StatusCodes.Status403Forbidden)
-    .ProducesProblem(StatusCodes.Status500InternalServerError)
-    .RequireAuthorization();
+    .ProducesProblem(StatusCodes.Status500InternalServerError);
 
 app.Run();
 
-public record CreateProdutoRequest(
-    string Nome,
-    string Categoria,
-    decimal Preco
+public record CreateProductEndpointRequest(
+    string Name,
+    int CategoryId,
+    decimal Price,
+    IFormFileCollection Images
 );
-
-public record CreateProdutoRequestResponse(int Id);
