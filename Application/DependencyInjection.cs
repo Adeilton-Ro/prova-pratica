@@ -1,5 +1,7 @@
-﻿using Application.UseCases;
+﻿using Application.Behaviours;
+using Application.UseCases;
 using FluentValidation;
+using Mediator;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application;
@@ -12,6 +14,8 @@ public static class DependencyInjection
         {
             opts.ServiceLifetime = ServiceLifetime.Scoped;
         });
+
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestValidationBehaviour<,>));
 
         services.AddValidatorsFromAssemblyContaining<CreateProductRequest.Validator>();
 

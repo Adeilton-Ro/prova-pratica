@@ -72,7 +72,7 @@ public record CreateProductRequest(
                     {
                         Uri = imagesUrisByImageName[image.Name]
                     }
-                )
+                ).ToArray()
             };
 
             await productRepository.Create(product, cancellationToken);
