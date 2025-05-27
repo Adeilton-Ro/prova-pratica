@@ -1,8 +1,10 @@
 using Application.UseCases;
 using Domain.Images;
+using Infrastructure.Database;
 using Mediator;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Presentation;
@@ -54,6 +56,29 @@ builder.Services
     });
 
 Application.DependencyInjection.AddDependencies(builder.Services);
+Infrastructure.DependencyInjection.AddDependencies(
+    builder.Services,
+    (sp, opt) =>
+    {
+        var configuration = sp.GetRequiredService<IConfiguration>();
+
+        var databaseUser = configuration.GetValue<string>("DATABASE_USER")
+            ?? throw new InvalidOperationException("Variavel DATABASE_USER precisa ter um valor definido");
+        var databasePassword = configuration.GetValue<string>("DATABASE_PASSWORD")
+            ?? throw new InvalidOperationException("Variavel DATABASE_PASSWORD precisa ter um valor definido");
+
+        var partialConnectionString = configuration.GetConnectionString(nameof(ProvaPraticaDbContext))
+            ?? throw new InvalidOperationException("ConnectionString:ProvaPraticaDbContext não foi definida");
+
+        var connectionString = $"{partialConnectionString} " +
+                               $"User ID={databaseUser}; " +
+                               $"Password={databasePassword};";
+
+        opt.UseNpgsql(connectionString);
+    }
+);
+
+builder.Services.AddScoped<Image.IRepository, ImageRepository>();
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -63,10 +88,17 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+app.UseStaticFiles();
+
 if (!app.Environment.IsProduction())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
+
+    using var scope = app.Services.CreateScope();
+
+    var context = scope.ServiceProvider.GetRequiredService<ProvaPraticaDbContext>();
+    context.Database.EnsureCreated();
 }
 
 app.UseHttpsRedirection();
@@ -80,23 +112,24 @@ api.MapPost("produtos", async (
 ) =>
 {
     var request = new CreateProductRequest(
-        endpointRequest.Name, 
+        endpointRequest.Name,
         endpointRequest.CategoryId,
         endpointRequest.Price,
-        endpointRequest.Images.Select(image => 
-            new Image 
-            { 
+        endpointRequest.Images.Select(image =>
+            new Image
+            {
                 Extension = image.ContentType.Split("/")[1],
-                Name = image.FileName,
+                Name = image.Name,
                 Stream = image.OpenReadStream()
             }
-        )
+        ).ToArray()
     );
 
     var result = await sender.Send(request, cancellationToken);
 
     return result.Serialize();
 })
+    .DisableAntiforgery()
     .Accepts<CreateProductEndpointRequest>("multipart/form-data")
     .Produces<CreateProductRequest.Response>(StatusCodes.Status200OK)
     .ProducesProblem(StatusCodes.Status400BadRequest)
