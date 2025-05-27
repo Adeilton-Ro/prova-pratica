@@ -5,7 +5,7 @@ public partial class Product
 	public class Categories : Entity
 	{
         public required string Nome { get; set; }
-        public required string Description { get; set; }
+        public string? Description { get; set; }
 
         public interface IRepository
         {
