@@ -41,12 +41,12 @@ public record CreateProductRequest(
     {
         private readonly Product.IRepository productRepository;
         private readonly Image.IRepository imageRepository;
-        private readonly Product.Categories.IRepostiory categoriesRepository;
+        private readonly Product.Categories.IRepository categoriesRepository;
 
         public Handler(
             Product.IRepository productRepository,
             Image.IRepository imageRepository,
-            Product.Categories.IRepostiory categoriesRepository
+            Product.Categories.IRepository categoriesRepository
         )
         {
             this.productRepository = productRepository;

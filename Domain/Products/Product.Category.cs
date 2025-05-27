@@ -7,7 +7,7 @@ public partial class Product
         public required string Nome { get; set; }
         public required string Description { get; set; }
 
-        public interface IRepostiory
+        public interface IRepository
         {
             Task Create(Categories category, CancellationToken cancellationToken = default);
             Task<IEnumerable<Categories>> Get(CancellationToken cancellationToken = default);
