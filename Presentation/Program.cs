@@ -1,7 +1,4 @@
-using Application.UseCases;
 using Infrastructure.Database;
-using Mediator;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Presentation;
 using Presentation.Endpoints;

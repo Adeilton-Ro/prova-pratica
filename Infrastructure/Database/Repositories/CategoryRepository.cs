@@ -1,7 +1,5 @@
 ﻿using Domain;
 using Microsoft.EntityFrameworkCore;
-using System.Xml.Linq;
-using System;
 
 namespace Infrastructure.Database.Repositories;
 
@@ -20,6 +18,7 @@ class CategoryRepository : Category.IRepository
 
         if (!hasAlredyExist)
         {
+            category.Id = Guid.CreateVersion7();
             await context.AddAsync(category, cancellationToken);
             await context.SaveChangesAsync(cancellationToken);
         }

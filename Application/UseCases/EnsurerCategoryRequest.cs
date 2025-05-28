@@ -24,19 +24,18 @@ public record EnsurerCategoryRequest(
 
         public async ValueTask<Result<Response>> Handle(EnsurerCategoryRequest request, CancellationToken cancellationToken)
         {
-            var categoryId = Guid.CreateVersion7();
+            var category = new Category
+            {
+                Name = request.Name,
+                Description = request.Description
+            };
 
             await categoryRepository.Ensurer(
-                new()
-                {
-                    Id = categoryId,
-                    Name = request.Name,
-                    Description = request.Description
-                },
+                category,
                 cancellationToken
             );
 
-            return new Response(categoryId);
+            return new Response(category.Id);
         }
     }
 }
