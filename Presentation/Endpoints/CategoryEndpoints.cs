@@ -9,7 +9,9 @@ public static class CategoryEndpoints
 {
     public static IEndpointRouteBuilder MapCategory(this IEndpointRouteBuilder endpoint)
     {
-        var category = endpoint.MapGroup("categories");
+        var category = endpoint
+            .MapGroup("categories")
+            .WithTags("Category");
 
         category.MapPost(string.Empty, async (
             [FromBody] EnsurerCategoryRequest request,
@@ -55,7 +57,8 @@ public static class CategoryEndpoints
             var result = await sender.Send(new QueryCategoriesRequest(filters), cancellationToken);
 
             return result.Serialize();
-        });
+        })
+            .Produces<IEnumerable<QueryCategoriesRequest.Response>>(StatusCodes.Status200OK);
 
         return endpoint;
     }

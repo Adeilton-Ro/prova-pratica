@@ -50,7 +50,10 @@ var app = builder.Build();
 if (!app.Environment.IsProduction())
 {
     app.MapOpenApi();
-    app.MapScalarApiReference();
+    app.MapScalarApiReference(options =>
+    {
+        options.WithFavicon("https://www.ma9.com.br/static/img/ma9-favicon.png");
+    });
 
     using var scope = app.Services.CreateScope();
 
