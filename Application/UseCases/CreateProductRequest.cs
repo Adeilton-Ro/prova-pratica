@@ -59,6 +59,9 @@ public record CreateProductRequest(
 
             if (category is null) return new ResourceNotFoundError("Categoria");
 
+            if (category.IsActive is false) 
+                return new BusinessLogicError("Categoria indisponível");
+
             var productId = Guid.CreateVersion7();
             
             var imagesUris = await imageStorageServices.StoreProductImage(productId, request.Images, cancellationToken);
