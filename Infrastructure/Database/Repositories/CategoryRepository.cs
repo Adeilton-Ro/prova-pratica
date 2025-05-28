@@ -1,5 +1,7 @@
 ﻿using Domain;
 using Microsoft.EntityFrameworkCore;
+using System.Xml.Linq;
+using System;
 
 namespace Infrastructure.Database.Repositories;
 
@@ -23,9 +25,25 @@ class CategoryRepository : Category.IRepository
         }
     }
 
-    public async Task<IEnumerable<Category>> Get(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Category>> Get(
+        Category.IRepository.QueryFilters queryFilters,
+        CancellationToken cancellationToken = default
+    )
     {
-        return await context.Categories.ToListAsync(cancellationToken: cancellationToken);
+        IQueryable<Category> query = context.Categories;
+
+        var (name, description, active) = queryFilters;
+
+        if (name is not null)
+            query = query.Where(category => category.Name.StartsWith(name));
+
+        if (description is not null)
+            query = query.Where(category => category.Description!.Contains(description));
+
+        if (active is not null)
+            query = query.Where(category => category.IsActive == active);
+
+        return await query.ToArrayAsync(cancellationToken: cancellationToken);
     }
 
     public Task<Category?> Get(Guid id, CancellationToken cancellationToken = default)
@@ -36,7 +54,7 @@ class CategoryRepository : Category.IRepository
     public Task<Category?> Get(string name, CancellationToken cancellationToken = default)
     {
         return context.Categories.FirstOrDefaultAsync(
-            category => category.Name == name, 
+            category => category.Name == name,
             cancellationToken: cancellationToken
         );
     }

@@ -1,4 +1,5 @@
 ﻿using Application.UseCases;
+using Domain;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Query.Internal;
@@ -31,6 +32,20 @@ public static class CategoryEndpoints
         ) =>
         {
             var result = await sender.Send(request, cancellationToken);
+
+            return result.Serialize();
+        })
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        category.MapGet(string.Empty, async (
+            [AsParameters] Category.IRepository.QueryFilters filters,
+            [FromServices] ISender sender,
+            CancellationToken cancellationToken
+        ) =>
+        {
+            var result = await sender.Send(new QueryCategoriesRequest(filters), cancellationToken);
 
             return result.Serialize();
         });
