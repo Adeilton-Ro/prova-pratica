@@ -2,7 +2,6 @@
 using Domain;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Query.Internal;
 
 namespace Presentation.Endpoints;
 
@@ -10,7 +9,7 @@ public static class CategoryEndpoints
 {
     public static IEndpointRouteBuilder MapCategory(this IEndpointRouteBuilder endpoint)
     {
-        var category = endpoint.MapGroup("category");
+        var category = endpoint.MapGroup("categories");
 
         category.MapPost(string.Empty, async (
             [FromBody] EnsurerCategoryRequest request,
@@ -25,12 +24,20 @@ public static class CategoryEndpoints
             .Produces<EnsurerCategoryRequest.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
-        category.MapPut(string.Empty, async (
-            [FromBody] UpdateCategoryRequest request,
+        category.MapPut("{id}", async (
+            [FromRoute] Guid id,
+            [FromBody] UpdateCategoryEndpointRequest endpointRequest,
             [FromServices] ISender sender,
             CancellationToken cancellationToken
         ) =>
         {
+            var request = new UpdateCategoryRequest(
+                id,
+                endpointRequest.Name,
+                endpointRequest.Description,
+                endpointRequest.IsActive
+            );
+
             var result = await sender.Send(request, cancellationToken);
 
             return result.Serialize();
@@ -52,4 +59,10 @@ public static class CategoryEndpoints
 
         return endpoint;
     }
+
+    public record UpdateCategoryEndpointRequest(
+        string Name,
+        string? Description,
+        bool IsActive
+    );
 }
