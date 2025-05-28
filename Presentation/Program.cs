@@ -1,59 +1,13 @@
 using Application.UseCases;
-using Domain.Images;
 using Infrastructure.Database;
 using Mediator;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using Presentation;
+using Presentation.Endpoints;
 using Scalar.AspNetCore;
-using System.Text;
 
- var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddOpenApi(options =>
-{
-    options.AddDocumentTransformer((document, _, _) =>
-    {
-        var securityScheme = new OpenApiSecurityScheme
-        {
-            Type = SecuritySchemeType.Http,
-            In = ParameterLocation.Header,
-            Scheme = "bearer"
-        };
-        document.Components ??= new OpenApiComponents();
-        document.Components.SecuritySchemes.Add(JwtBearerDefaults.AuthenticationScheme, securityScheme);
-
-        var referenceScheme = new OpenApiSecurityScheme
-        {
-            Reference = new OpenApiReference
-            {
-                Id = JwtBearerDefaults.AuthenticationScheme,
-                Type = ReferenceType.SecurityScheme
-            }
-        };
-
-        document.SecurityRequirements.Add(new OpenApiSecurityRequirement
-        {
-            [referenceScheme] = []
-        });
-
-        return Task.CompletedTask;
-    });
-});
-
-builder.Services
-    .AddOptions<JwtBearerOptions>()
-    .Configure<IConfiguration>((options, cfg) =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(cfg.GetValue<string>("JWT_DECRYPT")!))
-        };
-    });
+var builder = WebApplication.CreateBuilder(args);
 
 Application.DependencyInjection.AddDependencies(builder.Services);
 Infrastructure.DependencyInjection.AddDependencies(
@@ -89,11 +43,7 @@ Infrastructure.DependencyInjection.AddDependencies(
     }
 );
 
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer();
-
-builder.Services.AddAuthorization();
+DependencyInjection.AddAuth(builder.Services);
 
 var app = builder.Build();
 
@@ -112,37 +62,9 @@ if (!app.Environment.IsProduction())
 
 app.UseHttpsRedirection();
 
-var api = app.MapGroup("api");
+var api = app.MapGroup("api")
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
-api.MapPost("produtos", async (
-    [FromForm] CreateProductEndpointRequest endpointRequest,
-    [FromServices] ISender sender,
-    CancellationToken cancellationToken
-) =>
-{
-    var request = new CreateProductRequest(
-        endpointRequest.Name,
-        endpointRequest.CategoryId,
-        endpointRequest.Price,
-        endpointRequest.Images.Select(image => (image.OpenReadStream(), image.ContentType)).ToArray()
-    );
-
-    var result = await sender.Send(request, cancellationToken);
-
-    return result.Serialize();
-})
-    .DisableAntiforgery()
-    .Accepts<CreateProductEndpointRequest>("multipart/form-data")
-    .Produces<CreateProductRequest.Response>(StatusCodes.Status200OK)
-    .ProducesProblem(StatusCodes.Status400BadRequest)
-    .ProducesProblem(StatusCodes.Status403Forbidden)
-    .ProducesProblem(StatusCodes.Status500InternalServerError);
+api.MapProducts();
 
 app.Run();
-
-public record CreateProductEndpointRequest(
-    string Name,
-    Guid CategoryId,
-    decimal Price,
-    IFormFileCollection Images
-);
