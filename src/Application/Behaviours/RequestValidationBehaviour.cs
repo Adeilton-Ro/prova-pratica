@@ -37,5 +37,4 @@ public class RequestValidationBehaviour<TRequest, TResponse> : IPipelineBehavior
 
         return await next(message, cancellationToken);
     }
-}
-
+}   

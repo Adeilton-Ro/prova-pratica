@@ -2,7 +2,6 @@
 using Domain;
 using Domain.Images;
 using Domain.Products;
-using NSubstitute;
 
 namespace Application.Test.UseCases;
 
