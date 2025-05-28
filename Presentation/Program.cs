@@ -11,7 +11,7 @@ using Presentation;
 using Scalar.AspNetCore;
 using System.Text;
 
-var builder = WebApplication.CreateBuilder(args);
+ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi(options =>
 {
@@ -75,10 +75,19 @@ Infrastructure.DependencyInjection.AddDependencies(
                                $"Password={databasePassword};";
 
         opt.UseNpgsql(connectionString);
+    },
+    (opt, sp) =>
+    {
+        var configuration = sp.GetRequiredService<IConfiguration>();
+
+        opt.BaseUrl = configuration.GetValue<string>("AmazonS3:BaseUrl")!
+            ?? throw new InvalidOperationException("AmazonS3:BaseUrl não foi definida"); ;
+        opt.User = configuration.GetValue<string>("MINIO_USER")!
+            ?? throw new InvalidOperationException("MINIO_USER não foi definida"); ;
+        opt.Password = configuration.GetValue<string>("MINIO_PASSWORD")!
+            ?? throw new InvalidOperationException("MINIO_PASSWORD não foi definida"); ;
     }
 );
-
-builder.Services.AddScoped<Image.IRepository, ImageRepository>();
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -88,8 +97,6 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-app.UseStaticFiles();
-
 if (!app.Environment.IsProduction())
 {
     app.MapOpenApi();
@@ -98,6 +105,8 @@ if (!app.Environment.IsProduction())
     using var scope = app.Services.CreateScope();
 
     var context = scope.ServiceProvider.GetRequiredService<ProvaPraticaDbContext>();
+
+    context.Database.EnsureDeleted();
     context.Database.EnsureCreated();
 }
 
@@ -115,14 +124,7 @@ api.MapPost("produtos", async (
         endpointRequest.Name,
         endpointRequest.CategoryId,
         endpointRequest.Price,
-        endpointRequest.Images.Select(image =>
-            new Image
-            {
-                Extension = image.ContentType.Split("/")[1],
-                Name = image.Name,
-                Stream = image.OpenReadStream()
-            }
-        ).ToArray()
+        endpointRequest.Images.Select(image => (image.OpenReadStream(), image.ContentType)).ToArray()
     );
 
     var result = await sender.Send(request, cancellationToken);
@@ -140,7 +142,7 @@ app.Run();
 
 public record CreateProductEndpointRequest(
     string Name,
-    int CategoryId,
+    Guid CategoryId,
     decimal Price,
     IFormFileCollection Images
 );

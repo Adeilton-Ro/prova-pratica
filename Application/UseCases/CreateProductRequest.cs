@@ -8,9 +8,9 @@ namespace Application.UseCases;
 
 public record CreateProductRequest(
     string Name,
-    int CategoryId,
+    Guid CategoryId,
     decimal Price,
-    IEnumerable<Image> Images
+    IEnumerable<(Stream content, string contentyType)> Images
 ) : IRequest<Result<CreateProductRequest.Response>>
 {
     public class Validator : AbstractValidator<CreateProductRequest>
@@ -21,13 +21,11 @@ public record CreateProductRequest(
                 .GreaterThanOrEqualTo(0);
 
             RuleFor(product => product.CategoryId)
-                .GreaterThan(0);
+                .NotEmpty();
 
             RuleForEach(product => product.Images)
                 .ChildRules(image => {
-                    image.RuleFor(i => i.Extension).NotEmpty();
-                    image.RuleFor(i => i.Name).NotEmpty();
-                    image.RuleFor(i => i.Stream); // TODO: Adiciona validação de tipo por assinatura do binario
+                    
                 });
 
             RuleFor(product => product.Name)
@@ -35,22 +33,22 @@ public record CreateProductRequest(
         }
     }
 
-    public record Response(int Id);
+    public record Response(Guid Id);
 
     public class Handler : IRequestHandler<CreateProductRequest, Result<Response>>
     {
         private readonly Product.IRepository productRepository;
-        private readonly Image.IRepository imageRepository;
+        private readonly IImageStorageServices imageStorageServices;
         private readonly Product.Categories.IRepository categoriesRepository;
 
         public Handler(
             Product.IRepository productRepository,
-            Image.IRepository imageRepository,
+            IImageStorageServices imageStorageServices,
             Product.Categories.IRepository categoriesRepository
         )
         {
             this.productRepository = productRepository;
-            this.imageRepository = imageRepository;
+            this.imageStorageServices = imageStorageServices;
             this.categoriesRepository = categoriesRepository;
         }
 
@@ -60,17 +58,19 @@ public record CreateProductRequest(
 
             if (category is null) return new ResourceNotFoundError("Categoria");
 
-            var imagesUrisByImageName = await imageRepository.Create(request.Images, cancellationToken);
+            var productId = Guid.CreateVersion7();
+            
+            var imagesUris = await imageStorageServices.StoreProductImage(productId, request.Images, cancellationToken);
 
             var product = new Product
             {
                 Category = category,
                 Name = request.Name,
                 Price = request.Price,
-                Images = request.Images.Select(image => 
+                Images = imagesUris.Select(imageUri => 
                     new Product.Image
                     {
-                        Uri = imagesUrisByImageName[image.Name]
+                        Uri = imageUri
                     }
                 ).ToArray()
             };

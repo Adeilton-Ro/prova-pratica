@@ -11,7 +11,7 @@ public partial class Product
         {
             Task Create(Categories category, CancellationToken cancellationToken = default);
             Task<IEnumerable<Categories>> Get(CancellationToken cancellationToken = default);
-            Task<Categories?> Get(int id, CancellationToken cancellationToken = default);
+            Task<Categories?> Get(Guid id, CancellationToken cancellationToken = default);
         }
     }
 }

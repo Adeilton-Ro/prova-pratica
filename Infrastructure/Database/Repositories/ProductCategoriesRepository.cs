@@ -23,7 +23,7 @@ class ProductCategoriesRepository : Product.Categories.IRepository
         return await context.ProductCategories.ToListAsync(cancellationToken: cancellationToken);
     }
 
-    public Task<Product.Categories?> Get(int id, CancellationToken cancellationToken = default)
+    public Task<Product.Categories?> Get(Guid id, CancellationToken cancellationToken = default)
     {
         return context.ProductCategories.FirstOrDefaultAsync(productCategory => productCategory.Id == id, cancellationToken);
     }
