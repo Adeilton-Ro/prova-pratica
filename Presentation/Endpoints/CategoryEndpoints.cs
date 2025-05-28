@@ -1,6 +1,7 @@
 ﻿using Application.UseCases;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 
 namespace Presentation.Endpoints;
 
@@ -22,6 +23,17 @@ public static class CategoryEndpoints
         })
             .Produces<EnsurerCategoryRequest.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        category.MapPut(string.Empty, async (
+            [FromBody] UpdateCategoryRequest request,
+            [FromServices] ISender sender,
+            CancellationToken cancellationToken
+        ) =>
+        {
+            var result = await sender.Send(request, cancellationToken);
+
+            return result.Serialize();
+        });
 
         return endpoint;
     }

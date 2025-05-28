@@ -1,4 +1,5 @@
-﻿using Domain.Images;
+﻿using Domain;
+using Domain.Images;
 using Domain.Products;
 using FluentResults;
 using FluentValidation;
@@ -39,22 +40,22 @@ public record CreateProductRequest(
     {
         private readonly Product.IRepository productRepository;
         private readonly IImageStorageServices imageStorageServices;
-        private readonly Product.Categories.IRepository categoriesRepository;
+        private readonly Category.IRepository categoryRepository;
 
         public Handler(
             Product.IRepository productRepository,
             IImageStorageServices imageStorageServices,
-            Product.Categories.IRepository categoriesRepository
+            Category.IRepository categoryRepository
         )
         {
             this.productRepository = productRepository;
             this.imageStorageServices = imageStorageServices;
-            this.categoriesRepository = categoriesRepository;
+            this.categoryRepository = categoryRepository;
         }
 
         public async ValueTask<Result<Response>> Handle(CreateProductRequest request, CancellationToken cancellationToken)
         {
-            var category = await categoriesRepository.Get(request.CategoryId, cancellationToken);
+            var category = await categoryRepository.Get(request.CategoryId, cancellationToken);
 
             if (category is null) return new ResourceNotFoundError("Categoria");
 

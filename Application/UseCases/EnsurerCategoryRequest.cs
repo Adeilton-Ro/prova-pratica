@@ -1,4 +1,4 @@
-﻿using Domain.Products;
+﻿using Domain;
 using FluentResults;
 using Mediator;
 
@@ -13,20 +13,20 @@ public record EnsurerCategoryRequest(
 
     public class Handler : IRequestHandler<EnsurerCategoryRequest, Result<Response>>
     {
-        private readonly Product.Categories.IRepository productCategoriesRepository;
+        private readonly Category.IRepository categoryRepository;
 
         public Handler(
-            Product.Categories.IRepository productCategoriesRepository
+            Category.IRepository categoryRepository
         )
         {
-            this.productCategoriesRepository = productCategoriesRepository;
+            this.categoryRepository = categoryRepository;
         }
 
         public async ValueTask<Result<Response>> Handle(EnsurerCategoryRequest request, CancellationToken cancellationToken)
         {
             var categoryId = Guid.CreateVersion7();
 
-            await productCategoriesRepository.Ensurer(
+            await categoryRepository.Ensurer(
                 new()
                 {
                     Id = categoryId,

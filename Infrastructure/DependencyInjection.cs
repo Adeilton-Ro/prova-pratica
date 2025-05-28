@@ -1,5 +1,6 @@
 ﻿using Amazon.Runtime;
 using Amazon.S3;
+using Domain;
 using Domain.Images;
 using Domain.Products;
 using Infrastructure.Database;
@@ -47,7 +48,7 @@ public static class DependencyInjection
     private static IServiceCollection AddRepositories(IServiceCollection services)
     {
         services.AddScoped<Product.IRepository, ProductRepository>();
-        services.AddScoped<Product.Categories.IRepository, ProductCategoriesRepository>();
+        services.AddScoped<Category.IRepository, CategoryRepository>();
 
         return services;
     }
