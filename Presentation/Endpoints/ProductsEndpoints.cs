@@ -8,9 +8,9 @@ public static class ProductsEndpoints
 {
     public static IEndpointRouteBuilder MapProducts(this IEndpointRouteBuilder endpoint)
     {
-        endpoint.MapGroup("products");
+        var products = endpoint.MapGroup("products");
 
-        endpoint.MapPost("produtos", async (
+        products.MapPost(string.Empty, async (
             [FromForm] CreateProductEndpointRequest endpointRequest,
             [FromServices] ISender sender,
             CancellationToken cancellationToken

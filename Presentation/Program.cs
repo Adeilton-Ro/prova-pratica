@@ -66,5 +66,6 @@ var api = app.MapGroup("api")
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
 api.MapProducts();
+api.MapCategory();
 
 app.Run();

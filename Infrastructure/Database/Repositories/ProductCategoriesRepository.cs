@@ -12,10 +12,15 @@ class ProductCategoriesRepository : Product.Categories.IRepository
         this.context = context;
     }
 
-    public async Task Create(Product.Categories category, CancellationToken cancellationToken = default)
+    public async Task Ensurer(Product.Categories category, CancellationToken cancellationToken = default)
     {
-        await context.AddAsync(category, cancellationToken);
-        await context.SaveChangesAsync(cancellationToken);
+        var hasAlredyExist = context.ProductCategories.Any(productCategories => productCategories.Name == category.Name);
+
+        if (!hasAlredyExist)
+        {
+            await context.AddAsync(category, cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
+        }
     }
 
     public async Task<IEnumerable<Product.Categories>> Get(CancellationToken cancellationToken = default)

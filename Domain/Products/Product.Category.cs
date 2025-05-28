@@ -4,12 +4,12 @@ public partial class Product
 {
 	public class Categories : Entity
 	{
-        public required string Nome { get; set; }
+        public required string Name { get; set; }
         public string? Description { get; set; }
 
         public interface IRepository
         {
-            Task Create(Categories category, CancellationToken cancellationToken = default);
+            Task Ensurer(Categories category, CancellationToken cancellationToken = default);
             Task<IEnumerable<Categories>> Get(CancellationToken cancellationToken = default);
             Task<Categories?> Get(Guid id, CancellationToken cancellationToken = default);
         }
