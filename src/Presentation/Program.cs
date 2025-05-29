@@ -18,8 +18,8 @@ Infrastructure.DependencyInjection.AddDependencies(
         var databasePassword = configuration.GetValue<string>("DATABASE_PASSWORD")
             ?? throw new InvalidOperationException("Variavel DATABASE_PASSWORD precisa ter um valor definido");
 
-        var partialConnectionString = configuration.GetConnectionString(nameof(ProvaPraticaDbContext))
-            ?? throw new InvalidOperationException("ConnectionString:ProvaPraticaDbContext não foi definida");
+        var partialConnectionString = configuration.GetValue<string>($"ProvaPraticaDbContextConnectionStrings")
+            ?? throw new InvalidOperationException("ProvaPraticaDbContextConnectionStrings não foi definida");
 
         var connectionString = $"{partialConnectionString} " +
                                $"User ID={databaseUser}; " +
@@ -31,8 +31,8 @@ Infrastructure.DependencyInjection.AddDependencies(
     {
         var configuration = sp.GetRequiredService<IConfiguration>();
 
-        opt.BaseUrl = configuration.GetValue<string>("AmazonS3:BaseUrl")!
-            ?? throw new InvalidOperationException("AmazonS3:BaseUrl não foi definida"); ;
+        opt.BaseUrl = configuration.GetValue<string>("AmazonS3BaseUrl")!
+            ?? throw new InvalidOperationException("AmazonS3BaseUrl não foi definida"); ;
         opt.User = configuration.GetValue<string>("MINIO_USER")!
             ?? throw new InvalidOperationException("MINIO_USER não foi definida"); ;
         opt.Password = configuration.GetValue<string>("MINIO_PASSWORD")!
