@@ -75,6 +75,19 @@ public static class ProductsEndpoints
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
+        products.MapDelete("{id}", async (
+            [FromRoute] Guid id,
+            [FromServices] ISender sender,
+            CancellationToken cancellationToken
+        ) =>
+        {
+            var result = await sender.Send(new DeleteProductRequest(id), cancellationToken);
+
+            return result.Serialize();
+        })
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
         return endpoint;
     }
 

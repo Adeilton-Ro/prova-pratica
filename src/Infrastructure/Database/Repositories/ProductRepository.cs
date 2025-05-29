@@ -19,6 +19,12 @@ class ProductRepository : Product.IRepository
         await context.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task Delete(Product product, CancellationToken cancellationToken = default)
+    {
+        context.Remove(product);
+        await context.SaveChangesAsync(cancellationToken);
+    }
+
     public Task<PaginatedEnumerable<Product>> Get(Product.IRepository.QueryFilters filters, CancellationToken cancellationToken = default)
     {
         IQueryable<Product> query = context.Products.Include(product => product.Category);
