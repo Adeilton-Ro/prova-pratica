@@ -16,24 +16,15 @@ public static class ProductsEndpoints
             .WithTags("Product");
 
         products.MapPost(string.Empty, async (
-            [FromForm] CreateProductEndpointRequest endpointRequest,
+            [FromForm] CreateProductRequest request,
             [FromServices] ISender sender,
             CancellationToken cancellationToken
         ) =>
-                {
-                    var request = new CreateProductRequest(
-                        endpointRequest.Name,
-                        endpointRequest.CategoryId,
-                        endpointRequest.Price,
-                        endpointRequest.Images.Select(image => (image.OpenReadStream(), image.ContentType)).ToArray()
-                    );
+        {
+            var result = await sender.Send(request, cancellationToken);
 
-                    var result = await sender.Send(request, cancellationToken);
-
-                    return result.Serialize();
-                })
-            .DisableAntiforgery()
-            .Accepts<CreateProductEndpointRequest>("multipart/form-data")
+            return result.Serialize();
+        })
             .Produces<CreateProductRequest.Response>(StatusCodes.Status200OK)
             .ProducesValidationProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status403Forbidden)
@@ -88,16 +79,30 @@ public static class ProductsEndpoints
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
+        products.MapPost("{id}/image", async (
+            [FromRoute] Guid id,
+            [FromForm] IFormFile image,
+            [FromServices] ISender sender,
+            CancellationToken cancellationToken
+        ) =>
+        {
+            var request = new CreateProductImageRequest(
+                id,
+                (image.OpenReadStream(), image.ContentType)
+            );
+
+            var result = await sender.Send(request, cancellationToken);
+
+            return result.Serialize();
+        })
+            .DisableAntiforgery()
+            .Accepts<IFormFile>("multipart/form-data")
+            .Produces<CreateProductRequest.Response>(StatusCodes.Status200OK)
+            .ProducesValidationProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
         return endpoint;
     }
-
-
-    public record CreateProductEndpointRequest(
-        string Name,
-        Guid CategoryId,
-        decimal Price,
-        IFormFileCollection Images
-    );
 
     public record UpdateProductEndpointRequest(
         string Name,

@@ -1,6 +1,5 @@
 ﻿using Application.UseCases;
 using Domain;
-using Domain.Images;
 using Domain.Products;
 
 namespace Application.Test.UseCases;
@@ -9,12 +8,11 @@ public class TestingCreateProductRequest
 {
     private readonly CreateProductRequest.Handler handler;
     private readonly Product.IRepository productRepository = Substitute.For<Product.IRepository>();
-    private readonly IImageStorageServices imageStorageServices = Substitute.For<IImageStorageServices>();
     private readonly Category.IRepository categoryRepository = Substitute.For<Category.IRepository>();
 
     public TestingCreateProductRequest()
     {
-        handler = new CreateProductRequest.Handler(productRepository, imageStorageServices, categoryRepository);
+        handler = new CreateProductRequest.Handler(productRepository, categoryRepository);
     }
 
     [Fact]
@@ -68,8 +66,6 @@ public class TestingCreateProductRequest
         var imageUris = new[] { "https://example.com/image1.jpg" };
 
         categoryRepository.Get(request.CategoryId, cancellationToken).Returns(category);
-        imageStorageServices.StoreProductImage(Arg.Any<Guid>(), request.Images, cancellationToken)
-            .Returns(imageUris);
 
         var result = await handler.Handle(request, cancellationToken);
 
@@ -79,7 +75,6 @@ public class TestingCreateProductRequest
             p.Price == request.Price &&
             p.Images.First().Uri == imageUris[0]
         ), cancellationToken);
-        await imageStorageServices.Received(1).StoreProductImage(Arg.Any<Guid>(), request.Images, cancellationToken);
     }
 
     private static CreateProductRequest CreateValidRequest()
@@ -87,8 +82,7 @@ public class TestingCreateProductRequest
         return new CreateProductRequest(
             Name: "Produto Teste",
             CategoryId: Guid.NewGuid(),
-            Price: 99.90m,
-            Images: []
+            Price: 99.90m
         );
     }
 }

@@ -25,23 +25,23 @@ services:
     volumes:
       - minio_data:/data
     
-  provapratica:
-    build: .
-    container_name: provapratica
-    restart: always
-    environment:
-      DATABASE_USER: ${DATABASE_USER}
-      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-      MINIO_USER: ${MINIO_USER}
-      MINIO_PASSWORD: ${MINIO_PASSWORD}
-      ASPNETCORE_ENVIRONMENT: Staging
-      ProvaPraticaDbContextConnectionStrings: ${ProvaPraticaDbContextConnectionStrings}
-      AmazonS3BaseUrl: ${AmazonS3BaseUrl}
-    ports:
-      - "8080:8080"
-    depends_on:
-      - db
-      - minio
+  # provapratica:
+  #   build: .
+  #   container_name: provapratica
+  #   restart: always
+  #   environment:
+  #     DATABASE_USER: ${DATABASE_USER}
+  #     DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+  #     MINIO_USER: ${MINIO_USER}
+  #     MINIO_PASSWORD: ${MINIO_PASSWORD}
+  #     ASPNETCORE_ENVIRONMENT: Staging
+  #     ProvaPraticaDbContextConnectionStrings: ${ProvaPraticaDbContextConnectionStrings}
+  #     AmazonS3BaseUrl: ${AmazonS3BaseUrl}
+  #   ports:
+  #     - "8080:8080"
+  #   depends_on:
+  #     - db
+  #     - minio
 
 volumes:
   postgres_data:

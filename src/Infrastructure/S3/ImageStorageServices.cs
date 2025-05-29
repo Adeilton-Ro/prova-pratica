@@ -15,35 +15,31 @@ public class ImageStorageServices : IImageStorageServices
     }
 
     const string ProductBucketName = "products";
-    public async Task<IEnumerable<string>> StoreProductImage(
+    
+    public async Task<string> StoreProductImage(
         Guid productId,
-        IEnumerable<(Stream content, string contentType)> images,
+        (Stream content, string contentType) image,
         CancellationToken cancellationToken = default
     )
     {
         await EnsurerBucket(ProductBucketName, cancellationToken);
 
-        var uris = new HashSet<string>(images.Count());
+        var key = $"{productId}/{Guid.NewGuid()}";
 
-        foreach (var (content, contentType) in images)
-        {
-            var key = $"{productId}/{Guid.NewGuid()}";
+        var (content, contentType) = image;
 
-            await amazonS3.PutObjectAsync(
-                new()
-                {
-                    BucketName = ProductBucketName,
-                    Key = key,
-                    InputStream = content,
-                    ContentType = contentType
-                },
-                cancellationToken
-            );
+        await amazonS3.PutObjectAsync(
+            new()
+            {
+                BucketName = ProductBucketName,
+                Key = key,
+                InputStream = content,
+                ContentType = contentType
+            },
+            cancellationToken
+        );
 
-            uris.Add(key);
-        }
-
-        return uris;
+        return key;
     }
 
     private async Task EnsurerBucket(string bucketName, CancellationToken cancellationToken = default)

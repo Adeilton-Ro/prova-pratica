@@ -1,5 +1,4 @@
 ﻿using Domain;
-using Domain.Images;
 using Domain.Products;
 using FluentResults;
 using FluentValidation;
@@ -10,8 +9,7 @@ namespace Application.UseCases;
 public record CreateProductRequest(
     string Name,
     Guid CategoryId,
-    decimal Price,
-    IEnumerable<(Stream content, string contentyType)> Images
+    decimal Price
 ) : IRequest<Result<CreateProductRequest.Response>>
 {
     public class Validator : AbstractValidator<CreateProductRequest>
@@ -24,11 +22,6 @@ public record CreateProductRequest(
             RuleFor(product => product.CategoryId)
                 .NotEmpty();
 
-            RuleForEach(product => product.Images)
-                .ChildRules(image => {
-                    
-                });
-
             RuleFor(product => product.Name)
                 .NotEmpty();
         }
@@ -39,17 +32,14 @@ public record CreateProductRequest(
     public class Handler : IRequestHandler<CreateProductRequest, Result<Response>>
     {
         private readonly Product.IRepository productRepository;
-        private readonly IImageStorageServices imageStorageServices;
         private readonly Category.IRepository categoryRepository;
 
         public Handler(
             Product.IRepository productRepository,
-            IImageStorageServices imageStorageServices,
             Category.IRepository categoryRepository
         )
         {
             this.productRepository = productRepository;
-            this.imageStorageServices = imageStorageServices;
             this.categoryRepository = categoryRepository;
         }
 
@@ -59,24 +49,16 @@ public record CreateProductRequest(
 
             if (category is null) return new ResourceNotFoundError("Categoria");
 
-            if (category.IsActive is false) 
+            if (category.IsActive is false)
                 return new BusinessLogicError("Categoria indisponível");
 
             var productId = Guid.CreateVersion7();
-            
-            var imagesUris = await imageStorageServices.StoreProductImage(productId, request.Images, cancellationToken);
 
             var product = new Product
             {
                 Category = category,
                 Name = request.Name,
-                Price = request.Price,
-                Images = imagesUris.Select(imageUri => 
-                    new Product.Image
-                    {
-                        Uri = imageUri
-                    }
-                ).ToArray()
+                Price = request.Price
             };
 
             await productRepository.Create(product, cancellationToken);
