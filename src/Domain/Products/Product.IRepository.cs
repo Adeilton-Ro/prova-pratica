@@ -14,5 +14,7 @@ public partial class Product
             bool? Active
         ) : PaginatedEnumerable<Product>(CurrentPage, PageSize);
         Task<PaginatedEnumerable<Product>> Get(QueryFilters filters, CancellationToken cancellationToken = default);
+        Task<Product?> Get(Guid Id, CancellationToken cancellationToken = default);
+        Task Update(Product product, CancellationToken cancellationToken = default);
     }
 }

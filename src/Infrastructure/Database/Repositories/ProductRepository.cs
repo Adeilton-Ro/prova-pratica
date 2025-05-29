@@ -46,4 +46,15 @@ class ProductRepository : Product.IRepository
 
         return Task.FromResult(filters.Paginate(query));
     }
+
+    public Task<Product?> Get(Guid id, CancellationToken cancellationToken = default)
+    {
+        return context.Products.FirstOrDefaultAsync(product => product.Id == id, cancellationToken: cancellationToken);
+    }
+
+    public async Task Update(Product product, CancellationToken cancellationToken = default)
+    {
+        context.Update(product);
+        await context.SaveChangesAsync(cancellationToken);
+    }
 }

@@ -3,6 +3,7 @@ using Domain;
 using Domain.Products;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
+using System.Runtime.CompilerServices;
 
 namespace Presentation.Endpoints;
 
@@ -26,15 +27,15 @@ public static class ProductsEndpoints
                         endpointRequest.Price,
                         endpointRequest.Images.Select(image => (image.OpenReadStream(), image.ContentType)).ToArray()
                     );
-        
+
                     var result = await sender.Send(request, cancellationToken);
-        
+
                     return result.Serialize();
                 })
             .DisableAntiforgery()
             .Accepts<CreateProductEndpointRequest>("multipart/form-data")
             .Produces<CreateProductRequest.Response>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesValidationProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
@@ -50,6 +51,30 @@ public static class ProductsEndpoints
         })
             .Produces<PaginatedEnumerable<QueryProductsRequest.Response>>(StatusCodes.Status200OK);
 
+        products.MapPut("{id}", async (
+            [FromRoute] Guid id,
+            [FromBody] UpdateProductEndpointRequest endpointRequest,
+            [FromServices] ISender sender,
+            CancellationToken cancellationToken
+        ) =>
+        {
+            var request = new UpdateProductRequest(
+                id,
+                endpointRequest.Name,
+                endpointRequest.CategoryId,
+                endpointRequest.Price,
+                endpointRequest.IsActive
+            );
+
+            var result = await sender.Send(request, cancellationToken);
+
+            return result.Serialize();
+        })
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesValidationProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
         return endpoint;
     }
 
@@ -59,5 +84,12 @@ public static class ProductsEndpoints
         Guid CategoryId,
         decimal Price,
         IFormFileCollection Images
+    );
+
+    public record UpdateProductEndpointRequest(
+        string Name,
+        Guid CategoryId,
+        decimal Price,
+        bool IsActive
     );
 }
