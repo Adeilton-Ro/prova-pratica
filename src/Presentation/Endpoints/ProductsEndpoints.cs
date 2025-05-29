@@ -1,4 +1,6 @@
 ﻿using Application.UseCases;
+using Domain;
+using Domain.Products;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
 
@@ -35,6 +37,18 @@ public static class ProductsEndpoints
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound);
+
+        products.MapGet(string.Empty, async (
+            [AsParameters] Product.IRepository.QueryFilters filters,
+            [FromServices] ISender sender,
+            CancellationToken cancellationToken
+        ) =>
+        {
+            var result = await sender.Send(new QueryProductsRequest(filters), cancellationToken);
+
+            return result.Serialize();
+        })
+            .Produces<PaginatedEnumerable<QueryProductsRequest.Response>>(StatusCodes.Status200OK);
 
         return endpoint;
     }
