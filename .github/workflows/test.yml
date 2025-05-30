@@ -1,0 +1,28 @@
+name: Executar testes unitarios em PRs
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 🧾 Checkout do código
+      uses: actions/checkout@v3
+
+    - name: 🧰 Instalar .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: 📦 Restaurar dependências
+      run: dotnet restore
+
+    - name: 🛠️ Buildar solução
+      run: dotnet build --no-restore --configuration Release
+
+    - name: 🧪 Executar testes
+      run: dotnet test --no-build --configuration Release --verbosity normal
