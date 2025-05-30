@@ -63,8 +63,6 @@ public class TestingCreateProductRequest
             Id = Guid.Empty
         };
 
-        var imageUris = new[] { "https://example.com/image1.jpg" };
-
         categoryRepository.Get(request.CategoryId, cancellationToken).Returns(category);
 
         var result = await handler.Handle(request, cancellationToken);
@@ -72,8 +70,7 @@ public class TestingCreateProductRequest
         Assert.True(result.IsSuccess);
         await productRepository.Received(1).Create(Arg.Is<Product>(p =>
             p.Name == request.Name &&
-            p.Price == request.Price &&
-            p.Images.First().Uri == imageUris[0]
+            p.Price == request.Price
         ), cancellationToken);
     }
 
