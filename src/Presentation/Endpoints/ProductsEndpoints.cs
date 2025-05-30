@@ -3,7 +3,6 @@ using Domain;
 using Domain.Products;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
-using System.Runtime.CompilerServices;
 
 namespace Presentation.Endpoints;
 
@@ -79,7 +78,7 @@ public static class ProductsEndpoints
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
-        products.MapPost("{id}/image", async (
+        products.MapPost("{id}/images", async (
             [FromRoute] Guid id,
             [FromForm] IFormFile image,
             [FromServices] ISender sender,
