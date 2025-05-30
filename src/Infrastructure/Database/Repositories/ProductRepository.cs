@@ -27,7 +27,8 @@ class ProductRepository : Product.IRepository
 
     public Task<PaginatedEnumerable<Product>> Get(Product.IRepository.QueryFilters filters, CancellationToken cancellationToken = default)
     {
-        IQueryable<Product> query = context.Products.Include(product => product.Category);
+        IQueryable<Product> query = context.Products
+            .Include(product => product.Images);
 
         var (
             currentPage,
@@ -55,7 +56,11 @@ class ProductRepository : Product.IRepository
 
     public Task<Product?> Get(Guid id, CancellationToken cancellationToken = default)
     {
-        return context.Products.FirstOrDefaultAsync(product => product.Id == id, cancellationToken: cancellationToken);
+        return context.Products
+            .Include(product => product.Images)
+            .FirstOrDefaultAsync(
+                product => product.Id == id, cancellationToken: cancellationToken
+            );
     }
 
     public async Task Update(Product product, CancellationToken cancellationToken = default)

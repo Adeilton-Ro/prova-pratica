@@ -12,16 +12,25 @@ class CategoryRepository : Category.IRepository
         this.context = context;
     }
 
-    public async Task Ensurer(Category category, CancellationToken cancellationToken = default)
+    public async Task Ensure(Category category, CancellationToken cancellationToken = default)
     {
-        var hasAlredyExist = context.Categories.Any(c => c.Name == category.Name);
+        var categoryWithSameName = context.Categories.FirstOrDefault(c => c.Name == category.Name);
 
-        if (!hasAlredyExist)
+        if (categoryWithSameName is null)
         {
             category.Id = Guid.CreateVersion7();
             await context.AddAsync(category, cancellationToken);
-            await context.SaveChangesAsync(cancellationToken);
         }
+        else
+        {
+            categoryWithSameName.IsActive = category.IsActive;
+            categoryWithSameName.Description = category.Description;
+
+            context.Update(categoryWithSameName);
+            category.Id = categoryWithSameName.Id;
+        }
+
+        await context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<IEnumerable<Category>> Get(

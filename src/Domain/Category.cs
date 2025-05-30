@@ -8,7 +8,7 @@ public class Category : Entity
 
     public interface IRepository
     {
-        Task Ensurer(Category category, CancellationToken cancellationToken = default);
+        Task Ensure(Category category, CancellationToken cancellationToken = default);
         public record QueryFilters(
             string? Name,
             string? Description,

@@ -14,7 +14,7 @@ public static class CategoryEndpoints
             .WithTags("Category");
 
         category.MapPost(string.Empty, async (
-            [FromBody] EnsurerCategoryRequest request,
+            [FromBody] EnsureCategoryRequest request,
             [FromServices] ISender sender,
             CancellationToken cancellationToken
         ) =>
@@ -23,7 +23,7 @@ public static class CategoryEndpoints
 
             return result.Serialize();
         })
-            .Produces<EnsurerCategoryRequest.Response>(StatusCodes.Status200OK)
+            .Produces<EnsureCategoryRequest.Response>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
         category.MapPut("{id}", async (

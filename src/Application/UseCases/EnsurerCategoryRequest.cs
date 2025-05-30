@@ -4,14 +4,14 @@ using Mediator;
 
 namespace Application.UseCases;
 
-public record EnsurerCategoryRequest(
+public record EnsureCategoryRequest(
     string Name,
     string? Description
-) : IRequest<Result<EnsurerCategoryRequest.Response>>
+) : IRequest<Result<EnsureCategoryRequest.Response>>
 {
     public record Response(Guid Id);
 
-    public class Handler : IRequestHandler<EnsurerCategoryRequest, Result<Response>>
+    public class Handler : IRequestHandler<EnsureCategoryRequest, Result<Response>>
     {
         private readonly Category.IRepository categoryRepository;
 
@@ -22,7 +22,7 @@ public record EnsurerCategoryRequest(
             this.categoryRepository = categoryRepository;
         }
 
-        public async ValueTask<Result<Response>> Handle(EnsurerCategoryRequest request, CancellationToken cancellationToken)
+        public async ValueTask<Result<Response>> Handle(EnsureCategoryRequest request, CancellationToken cancellationToken)
         {
             var category = new Category
             {
@@ -30,7 +30,7 @@ public record EnsurerCategoryRequest(
                 Description = request.Description
             };
 
-            await categoryRepository.Ensurer(
+            await categoryRepository.Ensure(
                 category,
                 cancellationToken
             );

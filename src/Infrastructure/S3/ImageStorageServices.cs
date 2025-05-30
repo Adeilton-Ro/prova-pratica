@@ -83,7 +83,7 @@ public class ImageStorageServices : IImageStorageServices
 
             var policyJson = $$"""
             {
-              "Version": "2025-01-01",
+              "Version": "2012-10-17",
               "Statement": [
                 {
                   "Effect": "Allow",

@@ -55,8 +55,7 @@ if (!app.Environment.IsProduction())
 
     var context = scope.ServiceProvider.GetRequiredService<ProvaPraticaDbContext>();
 
-    context.Database.EnsureDeleted();
-    context.Database.EnsureCreated();
+    await context.Database.EnsureCreatedAsync();
 }
 
 app.UseHttpsRedirection();

@@ -59,6 +59,12 @@ public static class ResultSerializer
                 type: "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.1"
             );
 
-        return TypedResults.InternalServerError("");
+        return TypedResults.InternalServerError(new ProblemDetails
+        {
+            Detail = error.Message,
+            Status = StatusCodes.Status500InternalServerError,
+            Title = "Internal Server Error",
+            Type = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.1"
+        });
     }
 }
