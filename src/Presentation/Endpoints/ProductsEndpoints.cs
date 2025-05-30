@@ -15,7 +15,7 @@ public static class ProductsEndpoints
             .WithTags("Product");
 
         products.MapPost(string.Empty, async (
-            [FromForm] CreateProductRequest request,
+            [FromBody] CreateProductRequest request,
             [FromServices] ISender sender,
             CancellationToken cancellationToken
         ) =>
