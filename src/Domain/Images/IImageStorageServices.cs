@@ -12,4 +12,9 @@ public interface IImageStorageServices
         string key, 
         CancellationToken cancellationToken = default
     );
+
+    Task DeleteProductImages(
+        IEnumerable<string> uris,
+        CancellationToken cancellationToken = default
+    );
 }

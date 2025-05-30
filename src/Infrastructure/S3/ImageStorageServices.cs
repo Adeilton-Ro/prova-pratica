@@ -49,6 +49,26 @@ public class ImageStorageServices : IImageStorageServices
         await amazonS3.DeleteObjectAsync(ProductBucketName, key, cancellationToken);
     }
 
+    public async Task DeleteProductImages(
+        IEnumerable<string> uris, 
+        CancellationToken cancellationToken = default
+    )
+    {
+        await amazonS3.DeleteObjectsAsync(
+            new()
+            {
+                BucketName = ProductBucketName,
+                Objects = uris.Select(uri => 
+                    new KeyVersion
+                    {
+                        Key = uri
+                    }
+                ).ToList()
+            },
+            cancellationToken
+        );
+    }
+
     private async Task EnsurerBucket(string bucketName, CancellationToken cancellationToken = default)
     {
 
