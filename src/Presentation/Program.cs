@@ -1,6 +1,5 @@
 using Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
-using Presentation;
 using Presentation.Endpoints;
 using Scalar.AspNetCore;
 
@@ -19,7 +18,7 @@ Infrastructure.DependencyInjection.AddDependencies(
             ?? throw new InvalidOperationException("Variavel POSTGRES_PASSWORD precisa ter um valor definido");
 
         var partialConnectionString = configuration.GetValue<string>($"ProvaPraticaDbContextConnectionStrings")
-            ?? throw new InvalidOperationException("ProvaPraticaDbContextConnectionStrings não foi definida");
+            ?? throw new InvalidOperationException("ProvaPraticaDbContextConnectionStrings nï¿½o foi definida");
 
         var connectionString = $"{partialConnectionString} " +
                                $"User ID={databaseUser}; " +
@@ -32,15 +31,15 @@ Infrastructure.DependencyInjection.AddDependencies(
         var configuration = sp.GetRequiredService<IConfiguration>();
 
         opt.BaseUrl = configuration.GetValue<string>("AmazonS3BaseUrl")!
-            ?? throw new InvalidOperationException("AmazonS3BaseUrl não foi definida"); ;
+            ?? throw new InvalidOperationException("AmazonS3BaseUrl nï¿½o foi definida"); ;
         opt.User = configuration.GetValue<string>("MINIO_ROOT_USER")!
-            ?? throw new InvalidOperationException("MINIO_ROOT_USER não foi definida"); ;
+            ?? throw new InvalidOperationException("MINIO_ROOT_USER nï¿½o foi definida"); ;
         opt.Password = configuration.GetValue<string>("MINIO_ROOT_PASSWORD")!
-            ?? throw new InvalidOperationException("MINIO_ROOT_PASSWORD não foi definida"); ;
+            ?? throw new InvalidOperationException("MINIO_ROOT_PASSWORD nï¿½o foi definida"); ;
     }
 );
 
-DependencyInjection.AddAuth(builder.Services);
+builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
