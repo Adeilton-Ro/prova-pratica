@@ -43,6 +43,10 @@ public record CreateProductImageRequest(
 
             var uri = await imageStorageServices.StoreProductImage(request.ProductId, request.Image, cancellationToken);
 
+            product.Images.Add(new() { Uri = uri});
+
+            await productRepository.Update(product, cancellationToken);
+
             return new Response(uri);
         }
     }

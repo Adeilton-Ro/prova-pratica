@@ -6,7 +6,7 @@ public partial class Product : Entity
     public decimal Price { get; set; }
     public bool IsActive { get; set; } = true;
     public Guid CategoryId { get; set; }
-    public required Category Category { get; set; }
+    public Category Category { get; set; } = default!;
     public ICollection<Image> Images { get; set; } = [];
 
     public class Image : Entity
