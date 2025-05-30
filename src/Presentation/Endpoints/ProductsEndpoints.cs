@@ -101,6 +101,20 @@ public static class ProductsEndpoints
             .ProducesValidationProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
+        products.MapDelete("{id}/images/{*uri}", async (
+            [FromRoute] Guid id,
+            [FromRoute] string uri,
+            [FromServices] ISender sender,
+            CancellationToken cancellationToken
+        ) =>
+        {
+            var result = await sender.Send(new DeleteProductImageRequest(id, uri), cancellationToken);
+
+            return result.Serialize();
+        })
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
         return endpoint;
     }
 

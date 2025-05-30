@@ -7,4 +7,9 @@ public interface IImageStorageServices
         (Stream content, string contentType) images,
         CancellationToken cancellationToken = default
     );
+
+    Task DeleteProductImage(
+        string key, 
+        CancellationToken cancellationToken = default
+    );
 }
