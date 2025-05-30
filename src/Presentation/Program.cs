@@ -13,10 +13,10 @@ Infrastructure.DependencyInjection.AddDependencies(
     {
         var configuration = sp.GetRequiredService<IConfiguration>();
 
-        var databaseUser = configuration.GetValue<string>("DATABASE_USER")
-            ?? throw new InvalidOperationException("Variavel DATABASE_USER precisa ter um valor definido");
-        var databasePassword = configuration.GetValue<string>("DATABASE_PASSWORD")
-            ?? throw new InvalidOperationException("Variavel DATABASE_PASSWORD precisa ter um valor definido");
+        var databaseUser = configuration.GetValue<string>("POSTGRES_USER")
+            ?? throw new InvalidOperationException("Variavel POSTGRES_USER precisa ter um valor definido");
+        var databasePassword = configuration.GetValue<string>("POSTGRES_PASSWORD")
+            ?? throw new InvalidOperationException("Variavel POSTGRES_PASSWORD precisa ter um valor definido");
 
         var partialConnectionString = configuration.GetValue<string>($"ProvaPraticaDbContextConnectionStrings")
             ?? throw new InvalidOperationException("ProvaPraticaDbContextConnectionStrings não foi definida");
@@ -33,10 +33,10 @@ Infrastructure.DependencyInjection.AddDependencies(
 
         opt.BaseUrl = configuration.GetValue<string>("AmazonS3BaseUrl")!
             ?? throw new InvalidOperationException("AmazonS3BaseUrl não foi definida"); ;
-        opt.User = configuration.GetValue<string>("MINIO_USER")!
-            ?? throw new InvalidOperationException("MINIO_USER não foi definida"); ;
-        opt.Password = configuration.GetValue<string>("MINIO_PASSWORD")!
-            ?? throw new InvalidOperationException("MINIO_PASSWORD não foi definida"); ;
+        opt.User = configuration.GetValue<string>("MINIO_ROOT_USER")!
+            ?? throw new InvalidOperationException("MINIO_ROOT_USER não foi definida"); ;
+        opt.Password = configuration.GetValue<string>("MINIO_ROOT_PASSWORD")!
+            ?? throw new InvalidOperationException("MINIO_ROOT_PASSWORD não foi definida"); ;
     }
 );
 
