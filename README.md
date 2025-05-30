@@ -1,72 +1,117 @@
-# 🧪 Prova Prática
-
-Bem-vindo(a)! Esta é sua prova prática para a vaga de Desenvolvedor .NET. A ideia é simular um desafio realista do dia a dia de desenvolvimento.
+# Prova Prática
 
 ---
 
-## 📦 Desafio: Cadastro e Consulta de Produtos
+## ⚙️ Tecnologias
 
-Você deverá desenvolver uma API REST para gerenciamento de produtos. Essa API será usada para manter o catálogo de produtos de um e-commerce.
+- ASP.NET 9
+- Libs comuns (+ Scalar, FluentValidation, FluentResults, Mediator.SourceGeneration, AWS SDK for .NET, xUnit, NSubstitute)
+- EF Core (+ Npgsql)
+- PostgreSQL
+- MinIO (para simulação de AWS S3)
+- AWS S3
+- ECS + ECR
+- Docker + Docker Compose (para subir app e banco)
 
-### Funcionalidades obrigatórias:
+## 🧪 Testes
 
-- Cadastrar um novo produto
-- Editar produto existente
-- Excluir um produto
-- Consultar lista de produtos com filtros:
-  - Por categoria
-  - Por faixa de preço
-  - Por status (Ativo/Inativo)
-  - Upload de imagem do produto
-  - Simular envio para a AWS S3 (pode ser salvo em disco ou usar MinIO local)
+Os testes de unidade cobrem a regra de negócio da criação e edição de produtos.   
+Utilizei xUnit + NSubstitute.   
+Para executar-los: `dotnet test ./tests/Application.Test/Application.Test.csproj`
 
----
 
-## 🛠️ Requisitos Técnicos
+## 🚀 Execução
 
-- .NET 6 ou superior
-- API REST
-- Usar alguma arquitetura, por exemplo em camadas
-- Banco de dados relacional (PostgreSQL)
-- Documentando os endpoints, por exemplo com o Swagger
-- Testes em pelo menos uma parte da regra de negócio
+Siga os passos abaixo para clonar e executar este projeto em sua máquina local:
 
----
+### 1. Clone o Repositório
 
-## ✨ Diferenciais (Bônus)
+```bash
+git clone https://github.com/Adeilton-Ro/prova-pratica.git
+```
 
-Estes itens não são obrigatórios, mas contam pontos na avaliação:
+### 2. Acesse o Diretório do Projeto
+```bash
+cd prova-pratica
+```
 
-- CI/CD (ex: GitHub Actions para build/test)
-- Diagrama da arquitetura ou documentação da estrutura do código
-- Docker (com docker-compose subindo app e banco)
+### 3. Configure as Variáveis de Ambiente
 
----
+Edite as variáveis de ambiente presentes no inicio do arquivo: `docker-compose.yaml`
 
-## ✅ Critérios de Avaliação
+### 4. Execute o Docker Compose
 
-- Clareza e organização do código
-- Uso adequado de OOP e boas práticas (SOLID, Clean Code)
-- Estrutura dos endpoints e convenções REST
-- Cobertura e qualidade dos testes
-- Commits claros e bem organizados
-- Facilidade de execução do projeto
+Certifique-se de que o Docker esteja instalado e rodando em sua máquina. Em seguida, execute:
 
----
+```bash
+docker-compose up --build
+```
 
-## 🚀 Como Entregar
+> ⚠ *Observação:* O Docker precisa estar rodando antes de executar este comando.
 
-1. Faça um **fork deste repositório** ou clone e crie um repositório público seu.
-2. Desenvolva a prova no seu repositório.
-3. Inclua no seu README instruções claras para rodar o projeto localmente.
-4. Quando finalizar, envie o link do seu repositório para a pessoa responsável pelo processo.
+Scalar documentando o consumo REST estará disponível em: http://localhost:8080/scalar
 
----
+## 🌐Topologia da infraestrutura
 
-## ⏰ Prazo
+A topologia do sistema é composta por três containers principais:
 
-Você terá **3 à 5 dias úteis** para entregar a prova a partir da data de recebimento. Se precisar de mais tempo, avise!
+- **API REST** (.NET 9), no ambiente produtivo é executada num Elastic Container Service (ECS), e imagem versionada no Elastic Container Registry (ECR)
+- **Banco de Dados relacional (PostgreSQL)**, no ambiente produtivo executado como uma instancia de Amazon Relational Database Service for PostgreSQL (RDS)
+- **Serviço de Armazenamento de BLOBs (MinIO)**, no ambiente produtivo executado como uma instancia do Simple Storage Service (S3)
 
----
+![Arquitetura da Solução](docs/arquiteturaSolucao.drawio.png)
 
-Boa sorte! 💻🚀
+Todos os serviços podem ser executados localmente via `docker-compose`, descrita melhor na secção Executando o projeto...
+
+## 🧱 Arquitetura
+
+Este projeto está estruturado segundo os princípios da Clean Architecture, organizando responsabilidades em camadas separadas:
+
+- **Domain**: núcleo da aplicação
+- **Application**: casos de uso
+- **Infrastructure**: detalhes de implementação/integração
+- **Presentation**: interface externa (API REST)
+
+A estrutura de pastas do repositório e a descrição das responsabilidades pode ser encontrada na proxima secção.
+
+## 🗂️ Estrutura de Pastas
+Abaixo está a estrutura de arquivos, com a descrição das responsabilidades de cada pasta:
+
+```md
+├─ .github: Actions do github
+│  └─ workflows
+│     └─ main.yml
+├─ ...: Dockerfile, compose, README, etc..
+├─ src 
+│  ├─ Application: Responsável por descrever o comportamento da aplicação
+│  │  ├─ Behaviours: Declara comportamentos transversais entre casos de uso
+│  │  │  └─ ...
+│  │  ├─ ...: Arquivos auxiliares do projeto (.csproj, DependencyInjection, modelos de erro em comum, etc.)
+│  │  └─ UseCases: Declara todos casos de uso, suas entradas, logica e respostas
+│  │     └─ ...
+│  ├─ Domain: Responsável por modelar as entidades do projeto e descrever o comportamento de repositorios e serviços relacionados
+│  │  └─ ...
+│  ├─ Infrastructure: Responsável por integrar com a infraestrutura necessaria para executar os casos de uso, como banco de dados e S3
+│  │  ├─ Database
+│  │  │  ├─ ProvaPraticaDbContext.cs: Contexto transacional para acessar o banco de dados
+│  │  │  └─ Repositories: Declara repositorios de acesso ao banco de dados
+│  │  │     └─ ...
+│  │  ├─ ...: Arquivos auxiliares do projeto (.csproj, DependencyInjection, etc.)
+│  │  └─ S3
+│  │     └─ ImageStorageServices.cs: Integra com SDK do S3 para armazenar imagens
+│  └─ Presentation: Responsável por expor os endpoints HTTP da aplicação (API REST)
+│     ├─ DependencyInjection.cs: Agrega toda a injeção de dependência do projeto
+│     ├─ Endpoints: Declara, mapeia e documenta endpoints
+│     │  └─ ...
+│     ├─ Program.cs: Ponto de entrada do programa
+│     ├─ ...: Arquivos auxiliares do projeto (.csproj, ResultSerializer, etc.)
+│     └─ appsettings.json: JSON com configuracoes de cada ambiente
+│        └─ ...
+└─ tests: Projetos de testes
+   └─ Application.Test: Cobre a camada de Application, segue a mesma estrutura do projeto testado
+      ├─ ...: Arquivos auxiliares do projeto (.csproj, etc.)
+      ├─ Behaviours
+      │  └─ ...
+      └─ UseCases
+         └─ ...
+```
